@@ -1,6 +1,8 @@
 
 # [ICCV'25] ADCD-Net: Robust Document Image Forgery Localization via Adaptive DCT Feature and Hierarchical Content Disentanglement
 
+[![arXiv](https://img.shields.io/badge/arXiv-2507.16397-b31b1b.svg)](https://arxiv.org/abs/2507.16397)
+
 ![Model Overview](./fig/model_overview.png)
  
 ## Description   
