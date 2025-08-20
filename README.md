@@ -17,7 +17,7 @@ The advancement of image editing tools has enabled malicious manipulation of sen
 
 **ADCD-Net is trained on 4 NVIDIA GeForce RTX 4090 24G GPUs which takes about 33 hours**
 
-Install dependencies: python 3.8, pytorch 1.11
+Install dependencies: python 3.8, pytorch 1.11, albumentations 1.3.0
 
 ## Data Preparation
 
