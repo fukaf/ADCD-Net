@@ -1,6 +1,8 @@
 
 # [ICCV'25] ADCD-Net: Robust Document Image Forgery Localization via Adaptive DCT Feature and Hierarchical Content Disentanglement
 
+[![arXiv](https://img.shields.io/badge/arXiv-2507.16397-b31b1b.svg)](https://arxiv.org/abs/2507.16397)
+
 ![Model Overview](./fig/model_overview.png)
  
 ## Description   
@@ -31,6 +33,12 @@ DocTamperOCR/ # OCR mask directory
     ├── FCD # FCD dataset directory
     └── SCD # SCD dataset directory
 ```
+
+## Get OCR Mask of images not in DocTamper
+
+We only provide the ocr mask of the DocTamper dataset. For other document images, you can use the script in ```seg_char``` to get the ocr mask."
+First, download the OCR model CRAFT model checkpoint from [CRAFT](https://github.com/clovaai/CRAFT-pytorch). Then, set the checkpoint path and document image path in ```seg_char/main.py``` and run the code to get the ocr mask.
+
 
 ## Training
 
