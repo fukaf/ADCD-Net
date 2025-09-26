@@ -34,11 +34,21 @@ DocTamperOCR/ # OCR mask directory
     └── SCD # SCD dataset directory
 ```
 
-## Get OCR Mask of images not in DocTamper
+## Get OCR masks of images not in DocTamper
 
 We only provide the ocr mask of the DocTamper dataset. For other document images, you can use the script in ```seg_char``` to get the ocr mask."
 First, download the OCR model CRAFT model checkpoint from [CRAFT](https://github.com/clovaai/CRAFT-pytorch). Then, set the checkpoint path and document image path in ```seg_char/main.py``` and run the code to get the ocr mask.
 
+```python
+    ckpt_path = ''  # TODO: CRAFT model checkpoint
+    save_dir = '' # TODO: save dir of ocr masks
+    img_path = '' # TODO: input document image path
+
+    char_seger = CharSeger(ckpt_path=ckpt_path,
+                           save_dir=save_dir)
+
+    char_seger.seg_char_per_img(img_path=img_path)
+```
 
 ## Training
 

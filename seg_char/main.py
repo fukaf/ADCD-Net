@@ -91,9 +91,9 @@ class CharSeger:
 
 
 if __name__ == '__main__':
-    ckpt_path = ''  # TODO: CRAFT model checkpoint
-    save_dir = '' # TODO: save dir of ocr masks
-    img_path = '' # TODO: input document image path
+    ckpt_path = ''
+    save_dir = ''
+    img_path = ''
 
     char_seger = CharSeger(ckpt_path=ckpt_path,
                            save_dir=save_dir)
