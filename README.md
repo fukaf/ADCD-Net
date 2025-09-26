@@ -17,11 +17,11 @@ The advancement of image editing tools has enabled malicious manipulation of sen
 
 **ADCD-Net is trained on 4 NVIDIA GeForce RTX 4090 24G GPUs which takes about 33 hours**
 
-Install dependencies: python 3.8, pytorch 1.11
+Install dependencies: python 3.8, pytorch 1.11, albumentations 1.3.0
 
 ## Data Preparation
 
-Download the DocTamper dataset from [DocTamper](https://github.com/qcf-568/DocTamper) and the ocr mask and model checkpoints from [ADCD-Net](https://drive.google.com/file/d/10m7v0RrmI68UbfaWCwAN0nfR2y7DWS_4/view?usp=sharing).
+Download the DocTamper dataset from [DocTamper](https://github.com/qcf-568/DocTamper) (```qt_table.pk``` and files in ```pks``` can be also found from the DocTamper repository) and the ocr mask and model checkpoints from [ADCD-Net](https://drive.google.com/file/d/10m7v0RrmI68UbfaWCwAN0nfR2y7DWS_4/view?usp=sharing) (the data can be accessed without request from now on).
 The files from ADCD-Net is organized as follows:
 
 ```
