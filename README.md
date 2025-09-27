@@ -16,6 +16,8 @@ We present a robust document forgery localization model that adaptively leverage
 - [ ] General inference pipline for images outside DocTamper
 - [ ] Update better OCR model
 - [ ] Evaluate ADCD-Net on [ForensicHub](https://github.com/scu-zjz/ForensicHub) benchmark (cross-domain document IML)
+- [x] Release model checkpoint and OCR marks of DocTamper 
+- [x] Release training and inference code
 
 ## Environment Setup
 
