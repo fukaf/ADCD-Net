@@ -92,3 +92,15 @@ min_qf = 75  # minimum jpeg quality factor
 shift_1p = False  # shift 1 pixel for evaluation
 val_aug = None # other distortions can be added here
 ```
+## Citation
+
+If you find our project useful in your research, please cite it in your publications.
+
+```bibtex
+@inproceedings{wong2025adcd,
+  title={ADCD-Net: Robust Document Image Forgery Localization via Adaptive DCT Feature and Hierarchical Content Disentanglement},
+  author={Wong, Kahim and Zhou, Jicheng and Wu, Haiwei and Si, Yain-Whar and Zhou, Jiantao},
+  booktitle={Proceedings of the IEEE/CVF international conference on computer vision},
+  year={2025}
+}
+```
