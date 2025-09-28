@@ -32,7 +32,7 @@ The best scores are marked in green and the second best scores are marked in yel
 
 Install dependencies: python 3.8, pytorch 1.11, albumentations 1.3.0
 
-## Data Preparation
+## Prepare Data
 
 Download the DocTamper dataset from [DocTamper](https://github.com/qcf-568/DocTamper) (```qt_table.pk``` and files in ```pks``` can be also found from the DocTamper repository) and the ocr mask and model checkpoints from [ADCD-Net](https://drive.google.com/file/d/10m7v0RrmI68UbfaWCwAN0nfR2y7DWS_4/view?usp=sharing) (the data can be accessed without request from now on).
 The files from ADCD-Net is organized as follows:
@@ -63,7 +63,7 @@ char_seger = CharSeger(ckpt_path=ckpt_path,
 char_seger.seg_char_per_img(img_path=img_path)
 ```
 
-## Training
+## Train with DocTamper
 
 Before run the ```main.py```, please set the paths of the dataset, ocr mask and model checkpoint in ```cfg.py```. 
 The DocRes checkpoint is provided in ```docres.pkl```. 
@@ -75,7 +75,7 @@ ckpt = 'path/to/ADCD-Net.pth' # TODO:
 docres_ckpt_path = 'path/to/docres.pkl' # TODO:
 ```
 
-## Evaluation
+## Evaluate with DocTamper
 
 Before run the ```main.py```, please set the paths of the dataset, distortions, ocr mask and model checkpoint in ```cfg.py```. 
 The ADCD-Net checkpoint is provided in ```ADCDNet.pth```. 
