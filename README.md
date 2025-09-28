@@ -23,7 +23,7 @@ We present a robust document forgery localization model that adaptively leverage
 
 ![doc_protocol](./fig/doc_protocol.png)
 
-Models are trained on Doctamper train set and evaluated on seven test sets, please refer to ForensicHub for more details.
+Models are trained on Doctamper train set and evaluated on seven test sets, please refer to [ForensicHub](https://github.com/scu-zjz/ForensicHub) for more details.
 The best scores are marked in green and the second best scores are marked in yellow.
 
 ## Environment Setup
