@@ -13,7 +13,7 @@ We present a robust document forgery localization model that adaptively leverage
 
 ## TODO
 
-- [ ] General inference pipline for images outside DocTamper
+- [x] General inference pipline for images outside DocTamper
 - [ ] Update better OCR model
 - [x] Evaluate ADCD-Net on [ForensicHub](https://github.com/scu-zjz/ForensicHub) benchmark (Doc Protocol)
 - [x] Release model checkpoint and OCR marks of DocTamper 
@@ -62,6 +62,75 @@ char_seger = CharSeger(ckpt_path=ckpt_path,
 
 char_seger.seg_char_per_img(img_path=img_path)
 ```
+
+## Single Image Inference (New!)
+
+We now provide easy-to-use scripts for testing ADCD-Net on single images or batches of images outside the DocTamper dataset.
+
+### Quick Start
+
+1. **Install inference dependencies:**
+```bash
+pip install -r requirements_inference.txt
+```
+
+2. **Test your setup:**
+```bash
+python test_setup.py \
+    --model path/to/ADCD-Net.pth \
+    --docres path/to/docres.pkl \
+    --qt-table path/to/qt_table.pk
+```
+
+3. **Run inference on a single image:**
+```bash
+python inference.py \
+    --image your_document.jpg \
+    --model path/to/ADCD-Net.pth \
+    --docres path/to/docres.pkl \
+    --qt-table path/to/qt_table.pk \
+    --output result.png
+```
+
+4. **Process multiple images:**
+```bash
+python batch_inference.py \
+    --input-dir path/to/images/ \
+    --output-dir path/to/outputs/ \
+    --model path/to/ADCD-Net.pth \
+    --docres path/to/docres.pkl \
+    --qt-table path/to/qt_table.pk
+```
+
+For detailed instructions, see [INFERENCE_GUIDE.md](INFERENCE_GUIDE.md).
+
+### Available Scripts
+
+- **`inference.py`**: Main inference script with full pipeline
+- **`example_inference.py`**: Simple example for beginners
+- **`batch_inference.py`**: Process multiple images in a directory
+- **`test_setup.py`**: Verify your environment and setup
+
+### Python API Usage
+
+```python
+from inference import SingleImageInference
+
+# Initialize
+inferencer = SingleImageInference(
+    model_ckpt_path='ADCD-Net.pth',
+    docres_ckpt_path='docres.pkl',
+    qt_table_path='qt_table.pk',
+    device='cuda'
+)
+
+# Run inference
+results = inferencer.predict('document.jpg')
+
+# Visualize
+inferencer.visualize_results(results, save_path='output.png')
+```
+
 
 ## Train with DocTamper
 

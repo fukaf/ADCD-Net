@@ -1,0 +1,23 @@
+# Requirements for ADCD-Net Inference Scripts
+# Install with: pip install -r requirements_inference.txt
+
+# Core dependencies
+torch>=1.11.0
+torchvision>=0.12.0
+numpy>=1.21.0
+opencv-python>=4.5.0
+Pillow>=9.0.0
+matplotlib>=3.5.0
+
+# JPEG DCT extraction
+jpeg2dct>=0.1.4
+
+# Data augmentation (used in preprocessing)
+albumentations>=1.3.0
+
+# Optional: For CRAFT OCR model
+# scipy>=1.7.0
+# scikit-image>=0.19.0
+
+# Progress bar (optional, for batch processing)
+tqdm>=4.62.0
