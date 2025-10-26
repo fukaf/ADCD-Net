@@ -5,6 +5,8 @@ Usage:
     python example_inference.py
 
 Make sure to update the paths in the CONFIG section below.
+
+Note: This script will automatically use the DCT workaround if jpeg2dct is not available.
 """
 
 from inference import SingleImageInference
@@ -13,8 +15,8 @@ from inference import SingleImageInference
 # TODO: Update these paths to match your setup
 CONFIG = {
     'model_ckpt': 'path/to/ADCD-Net.pth',          # ADCD-Net checkpoint
-    'docres_ckpt': 'path/to/docres.pkl',           # DocRes checkpoint
     'qt_table': 'path/to/qt_table.pk',             # Quantization table
+    'docres_ckpt': None,                            # Optional: DocRes checkpoint (not needed for trained ADCD-Net)
     'craft_ckpt': None,                             # Optional: CRAFT checkpoint for OCR
     'device': 'cuda',                               # 'cuda' or 'cpu'
 }

@@ -87,10 +87,11 @@ python test_setup.py \
 python inference.py \
     --image your_document.jpg \
     --model path/to/ADCD-Net.pth \
-    --docres path/to/docres.pkl \
     --qt-table path/to/qt_table.pk \
     --output result.png
 ```
+
+**Note:** The `--docres` argument is optional and not needed for inference with trained ADCD-Net models.
 
 4. **Process multiple images:**
 ```bash
@@ -106,20 +107,39 @@ For detailed instructions, see [INFERENCE_GUIDE.md](INFERENCE_GUIDE.md).
 
 ### Available Scripts
 
-- **`inference.py`**: Main inference script with full pipeline
+- **`inference.py`**: Main inference script with full pipeline (auto-detects DCT method)
 - **`example_inference.py`**: Simple example for beginners
 - **`batch_inference.py`**: Process multiple images in a directory
 - **`test_setup.py`**: Verify your environment and setup
+- **`test_dct_integration.py`**: Test DCT extraction compatibility
+
+### DCT Extraction Methods
+
+The inference scripts support **two DCT extraction methods** with automatic fallback:
+
+1. **jpeg2dct library** (recommended for best accuracy)
+   - Extracts DCT directly from JPEG file
+   - 100% accuracy compared to training
+   - May require system dependencies (libjpeg-dev)
+
+2. **OpenCV workaround** (easier installation)
+   - Computes DCT from image pixels using cv2.dct()
+   - 85-95% correlation with jpeg2dct
+   - No external dependencies beyond OpenCV
+   - Automatically used if jpeg2dct not available
+
+**The system automatically selects the best available method!**
+
+For more information, see `INFERENCE_WITH_WORKAROUND.md`.
 
 ### Python API Usage
 
 ```python
 from inference import SingleImageInference
 
-# Initialize
+# Initialize (docres is optional)
 inferencer = SingleImageInference(
     model_ckpt_path='ADCD-Net.pth',
-    docres_ckpt_path='docres.pkl',
     qt_table_path='qt_table.pk',
     device='cuda'
 )

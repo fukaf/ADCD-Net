@@ -3,6 +3,8 @@ Batch Inference Script for ADCD-Net
 
 This script processes multiple images in a directory and saves predictions.
 
+Note: This script will automatically use the DCT workaround if jpeg2dct is not available.
+
 Usage:
     python batch_inference.py \
         --input-dir path/to/images/ \
@@ -160,10 +162,10 @@ def main():
                        help='Directory to save results')
     parser.add_argument('--model', type=str, required=True,
                        help='Path to ADCD-Net checkpoint')
-    parser.add_argument('--docres', type=str, required=True,
-                       help='Path to DocRes checkpoint')
     parser.add_argument('--qt-table', type=str, required=True,
                        help='Path to quantization table pickle')
+    parser.add_argument('--docres', type=str, default=None,
+                       help='Path to DocRes checkpoint (optional, not needed for trained ADCD-Net)')
     parser.add_argument('--craft', type=str, default=None,
                        help='Path to CRAFT checkpoint (optional)')
     parser.add_argument('--jpeg-quality', type=int, default=100,
@@ -185,20 +187,21 @@ def main():
         print(f"Error: Model checkpoint not found: {args.model}")
         return
     
-    if not os.path.exists(args.docres):
-        print(f"Error: DocRes checkpoint not found: {args.docres}")
-        return
-    
     if not os.path.exists(args.qt_table):
         print(f"Error: Quantization table not found: {args.qt_table}")
         return
+    
+    if args.docres and not os.path.exists(args.docres):
+        print(f"Warning: DocRes checkpoint not found: {args.docres}")
+        print("Continuing without docres (OK if using trained ADCD-Net checkpoint)")
+        args.docres = None
     
     # Initialize inference pipeline
     print("Initializing ADCD-Net inference pipeline...")
     inferencer = SingleImageInference(
         model_ckpt_path=args.model,
-        docres_ckpt_path=args.docres,
         qt_table_path=args.qt_table,
+        docres_ckpt_path=args.docres,
         craft_ckpt_path=args.craft,
         device=args.device
     )

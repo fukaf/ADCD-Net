@@ -29,7 +29,13 @@ class ADCDNet(nn.Module):
         super().__init__()
         # rgb encoder + localization branch
         self.restormer_loc = get_restormer(model_name='full_model', out_channels=loc_out_dim)
-        self.load_docres()
+        # Load docres checkpoint if available (only needed for training from scratch)
+        if hasattr(cfg, 'docres_ckpt_path') and cfg.docres_ckpt_path is not None:
+            try:
+                self.load_docres()
+            except Exception as e:
+                print(f"Warning: Could not load docres checkpoint: {e}")
+                print("Continuing without docres initialization (OK if using trained ADCD-Net checkpoint)")
         # reconstruction branch
         self.restormer_rec = get_restormer(model_name='decoder_only', out_channels=rec_out_dim)
         # dct encoder

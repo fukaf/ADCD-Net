@@ -21,14 +21,23 @@ import torchvision.transforms as T
 
 # Import model and utilities
 from model.model import ADCDNet
-from jpeg2dct.numpy import load as dct_load
+
+# Try to import jpeg2dct, fall back to workaround
+try:
+    from jpeg2dct.numpy import load as dct_load
+    DCT_METHOD = 'jpeg2dct'
+    print("Using jpeg2dct library for DCT extraction")
+except ImportError:
+    print("jpeg2dct not available, using OpenCV workaround")
+    from dct_workaround import extract_dct_for_adcdnet
+    DCT_METHOD = 'opencv'
 
 
 class SingleImageInference:
     def __init__(self, 
                  model_ckpt_path,
-                 docres_ckpt_path,
                  qt_table_path,
+                 docres_ckpt_path=None,
                  craft_ckpt_path=None,
                  device='cuda'):
         """
@@ -36,8 +45,8 @@ class SingleImageInference:
         
         Args:
             model_ckpt_path: Path to ADCD-Net checkpoint
-            docres_ckpt_path: Path to DocRes checkpoint
             qt_table_path: Path to JPEG quantization table pickle
+            docres_ckpt_path: Path to DocRes checkpoint (optional, not needed if using trained ADCD-Net)
             craft_ckpt_path: Path to CRAFT OCR model (optional, for OCR mask generation)
             device: 'cuda' or 'cpu'
         """
@@ -79,7 +88,7 @@ class SingleImageInference:
         
         # Temporarily set cfg values needed by model
         import cfg
-        original_docres = cfg.docres_ckpt_path
+        original_docres = getattr(cfg, 'docres_ckpt_path', None)
         cfg.docres_ckpt_path = docres_ckpt_path
         
         # Initialize model
@@ -100,7 +109,13 @@ class SingleImageInference:
             else:
                 new_state_dict[k] = v
         
-        self.model.load_state_dict(new_state_dict, strict=False)
+        # Load the trained ADCD-Net weights
+        missing, unexpected = self.model.load_state_dict(new_state_dict, strict=False)
+        if missing:
+            print(f"Warning: Missing keys in checkpoint: {missing}")
+        if unexpected:
+            print(f"Warning: Unexpected keys in checkpoint: {unexpected}")
+        
         self.model = self.model.to(self.device)
         self.model.eval()
         
@@ -239,21 +254,27 @@ class SingleImageInference:
             compressed_img = Image.open(tmp.name)
             compressed_img = compressed_img.convert('RGB')
             
-            # Extract DCT coefficients
+            # Extract DCT coefficients based on available method
             try:
-                dct_y, _, _ = dct_load(tmp.name, normalized=False)
-            except:
+                if DCT_METHOD == 'jpeg2dct':
+                    # Use jpeg2dct library
+                    dct_y, _, _ = dct_load(tmp.name, normalized=False)
+                    
+                    # Convert DCT from (h, w, 64) to (8h, 8w)
+                    rows, cols, _ = dct_y.shape
+                    dct = np.empty((8 * rows, 8 * cols), dtype=np.int32)
+                    for j in range(rows):
+                        for i in range(cols):
+                            dct[8*j:8*(j+1), 8*i:8*(i+1)] = dct_y[j, i].reshape(8, 8)
+                else:
+                    # Use OpenCV workaround
+                    dct = extract_dct_for_adcdnet(tmp.name, quality_factor=quality)
+                    
+            except Exception as e:
                 # Fallback if DCT extraction fails
-                print("Warning: DCT extraction failed, using dummy DCT")
+                print(f"Warning: DCT extraction failed ({e}), using dummy DCT")
                 h, w = np.array(img).shape[:2]
                 return compressed_img, np.zeros((h, w), dtype=np.int32), quality
-            
-            # Convert DCT from (h, w, 64) to (8h, 8w)
-            rows, cols, _ = dct_y.shape
-            dct = np.empty((8 * rows, 8 * cols), dtype=np.int32)
-            for j in range(rows):
-                for i in range(cols):
-                    dct[8*j:8*(j+1), 8*i:8*(i+1)] = dct_y[j, i].reshape(8, 8)
             
             return compressed_img, dct, quality
     
@@ -424,10 +445,10 @@ def main():
                        help='Path to input image')
     parser.add_argument('--model', type=str, required=True,
                        help='Path to ADCD-Net checkpoint')
-    parser.add_argument('--docres', type=str, required=True,
-                       help='Path to DocRes checkpoint')
     parser.add_argument('--qt-table', type=str, required=True,
                        help='Path to quantization table pickle')
+    parser.add_argument('--docres', type=str, default=None,
+                       help='Path to DocRes checkpoint (optional, not needed for trained ADCD-Net)')
     parser.add_argument('--craft', type=str, default=None,
                        help='Path to CRAFT checkpoint (optional)')
     parser.add_argument('--ocr-bbox', type=str, default=None,
@@ -451,20 +472,21 @@ def main():
         print(f"Error: Model checkpoint not found: {args.model}")
         return
     
-    if not os.path.exists(args.docres):
-        print(f"Error: DocRes checkpoint not found: {args.docres}")
-        return
-    
     if not os.path.exists(args.qt_table):
         print(f"Error: Quantization table not found: {args.qt_table}")
         return
+    
+    if args.docres and not os.path.exists(args.docres):
+        print(f"Warning: DocRes checkpoint not found: {args.docres}")
+        print("Continuing without docres (OK if using trained ADCD-Net checkpoint)")
+        args.docres = None
     
     # Initialize inference
     print("Initializing inference pipeline...")
     inferencer = SingleImageInference(
         model_ckpt_path=args.model,
-        docres_ckpt_path=args.docres,
         qt_table_path=args.qt_table,
+        docres_ckpt_path=args.docres,
         craft_ckpt_path=args.craft,
         device=args.device
     )
