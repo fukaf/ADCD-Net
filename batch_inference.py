@@ -173,6 +173,8 @@ def main():
     parser.add_argument('--device', type=str, default='cuda',
                        choices=['cuda', 'cpu'],
                        help='Device to run inference on')
+    parser.add_argument('--temp-dir', type=str, default='./temp_inference',
+                       help='Directory for temporary files (default: ./temp_inference)')
     parser.add_argument('--no-save-masks', action='store_true',
                        help='Do not save binary masks as .npy files')
     
@@ -203,7 +205,8 @@ def main():
         qt_table_path=args.qt_table,
         docres_ckpt_path=args.docres,
         craft_ckpt_path=args.craft,
-        device=args.device
+        device=args.device,
+        temp_dir=args.temp_dir
     )
     
     # Process batch

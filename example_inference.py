@@ -19,6 +19,7 @@ CONFIG = {
     'docres_ckpt': None,                            # Optional: DocRes checkpoint (not needed for trained ADCD-Net)
     'craft_ckpt': None,                             # Optional: CRAFT checkpoint for OCR
     'device': 'cuda',                               # 'cuda' or 'cpu'
+    'temp_dir': './temp_inference',                 # Directory for temporary files
 }
 
 # Image to test
@@ -40,10 +41,11 @@ def run_inference():
     print("\n[1/3] Initializing inference pipeline...")
     inferencer = SingleImageInference(
         model_ckpt_path=CONFIG['model_ckpt'],
-        docres_ckpt_path=CONFIG['docres_ckpt'],
         qt_table_path=CONFIG['qt_table'],
+        docres_ckpt_path=CONFIG['docres_ckpt'],
         craft_ckpt_path=CONFIG['craft_ckpt'],
-        device=CONFIG['device']
+        device=CONFIG['device'],
+        temp_dir=CONFIG['temp_dir']
     )
     
     # Run prediction

@@ -39,7 +39,8 @@ class SingleImageInference:
                  qt_table_path,
                  docres_ckpt_path=None,
                  craft_ckpt_path=None,
-                 device='cuda'):
+                 device='cuda',
+                 temp_dir='./temp_inference'):
         """
         Initialize the inference pipeline.
         
@@ -49,11 +50,17 @@ class SingleImageInference:
             docres_ckpt_path: Path to DocRes checkpoint (optional, not needed if using trained ADCD-Net)
             craft_ckpt_path: Path to CRAFT OCR model (optional, for OCR mask generation)
             device: 'cuda' or 'cpu'
+            temp_dir: Directory for temporary files (default: './temp_inference')
         """
         self.device = device
         self.model = None
         self.qt_tables = None
         self.craft_model = None
+        
+        # Create temp directory
+        self.temp_dir = Path(temp_dir)
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Using temp directory: {self.temp_dir.absolute()}")
         
         # Load quantization tables
         self.load_qt_tables(qt_table_path)
@@ -245,20 +252,26 @@ class SingleImageInference:
             dct: DCT coefficients as numpy array (H, W)
             qf: quality factor used
         """
-        with tempfile.NamedTemporaryFile(delete=True, suffix='.jpg') as tmp:
+        # Use designated temp directory instead of system temp
+        import uuid
+        temp_filename = self.temp_dir / f"temp_{uuid.uuid4().hex}.jpg"
+        
+        try:
             # Convert to grayscale for DCT extraction
             img_gray = img.convert("L")
-            img_gray.save(tmp.name, "JPEG", quality=quality)
+            
+            # Save to our temp directory (with write permissions)
+            img_gray.save(str(temp_filename), "JPEG", quality=quality)
             
             # Load compressed image
-            compressed_img = Image.open(tmp.name)
+            compressed_img = Image.open(temp_filename)
             compressed_img = compressed_img.convert('RGB')
             
             # Extract DCT coefficients based on available method
             try:
                 if DCT_METHOD == 'jpeg2dct':
                     # Use jpeg2dct library
-                    dct_y, _, _ = dct_load(tmp.name, normalized=False)
+                    dct_y, _, _ = dct_load(str(temp_filename), normalized=False)
                     
                     # Convert DCT from (h, w, 64) to (8h, 8w)
                     rows, cols, _ = dct_y.shape
@@ -268,15 +281,23 @@ class SingleImageInference:
                             dct[8*j:8*(j+1), 8*i:8*(i+1)] = dct_y[j, i].reshape(8, 8)
                 else:
                     # Use OpenCV workaround
-                    dct = extract_dct_for_adcdnet(tmp.name, quality_factor=quality)
+                    dct = extract_dct_for_adcdnet(str(temp_filename), quality_factor=quality)
                     
             except Exception as e:
                 # Fallback if DCT extraction fails
                 print(f"Warning: DCT extraction failed ({e}), using dummy DCT")
                 h, w = np.array(img).shape[:2]
-                return compressed_img, np.zeros((h, w), dtype=np.int32), quality
-            
-            return compressed_img, dct, quality
+                dct = np.zeros((h, w), dtype=np.int32)
+        
+        finally:
+            # Clean up temp file
+            if temp_filename.exists():
+                try:
+                    temp_filename.unlink()  # Delete the temp file
+                except Exception as e:
+                    print(f"Warning: Could not delete temp file {temp_filename}: {e}")
+        
+        return compressed_img, dct, quality
     
     def preprocess_image(self, img_path, jpeg_quality=100, ocr_bbox_path=None):
         """
@@ -437,6 +458,19 @@ class SingleImageInference:
             plt.show()
         
         plt.close()
+    
+    def cleanup_temp_dir(self):
+        """
+        Clean up all temporary files (optional, call manually if needed).
+        This will remove the entire temp directory and all files within it.
+        """
+        if self.temp_dir.exists():
+            import shutil
+            try:
+                shutil.rmtree(self.temp_dir)
+                print(f"Cleaned up temp directory: {self.temp_dir}")
+            except Exception as e:
+                print(f"Warning: Could not clean temp directory: {e}")
 
 
 def main():
@@ -460,6 +494,8 @@ def main():
     parser.add_argument('--device', type=str, default='cuda',
                        choices=['cuda', 'cpu'],
                        help='Device to run inference on')
+    parser.add_argument('--temp-dir', type=str, default='./temp_inference',
+                       help='Directory for temporary files (default: ./temp_inference)')
     
     args = parser.parse_args()
     
@@ -488,7 +524,8 @@ def main():
         qt_table_path=args.qt_table,
         docres_ckpt_path=args.docres,
         craft_ckpt_path=args.craft,
-        device=args.device
+        device=args.device,
+        temp_dir=args.temp_dir
     )
     
     # Run prediction
