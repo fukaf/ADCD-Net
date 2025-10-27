@@ -327,11 +327,25 @@ class SingleImageInference:
         # Get OCR mask
         ocr_mask = self.extract_ocr_mask(compressed_img, ocr_bbox_path)
         
-        # Ensure dimensions match
+        # Ensure dimensions match and are divisible by 8 (required for 8x8 block processing)
         img_np = np.array(compressed_img)
         h, w = img_np.shape[:2]
+        
+        # Round dimensions to nearest multiple of 8
+        h_pad = ((h + 7) // 8) * 8
+        w_pad = ((w + 7) // 8) * 8
+        
+        # Resize image to 8-aligned dimensions if needed
+        if h != h_pad or w != w_pad:
+            compressed_img = compressed_img.resize((w_pad, h_pad), Image.BILINEAR)
+            img_np = np.array(compressed_img)
+            print(f"Padded image from ({w}x{h}) to ({w_pad}x{h_pad}) for 8x8 block alignment")
+        
+        # Update h, w to padded dimensions
+        h, w = h_pad, w_pad
+        
+        # Resize DCT and OCR mask to match padded dimensions
         if dct.shape[0] != h or dct.shape[1] != w:
-            # Resize DCT to match image size
             dct = cv2.resize(dct.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR)
             dct = dct.astype(np.int32)
         
